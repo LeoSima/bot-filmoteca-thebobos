@@ -6,26 +6,26 @@ import { REST, Routes } from "discord.js";
 
 dotenv.config();
 
-const commands = [];
+const comandos = [];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const foldersPath = path.join(__dirname, "commands");
+const pathDiretorios = path.join(__dirname, "commands");
 
 try {
-	const commandFolders = fs.readdirSync(foldersPath);
+	const diretoriosComandos = fs.readdirSync(pathDiretorios);
 
-	for (const folder of commandFolders) {
-		const commandsPath = path.join(foldersPath, folder);
-		const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-		for (const file of commandFiles) {
-			const filePath = path.join(commandsPath, file);
-			const command = await import(pathToFileURL(filePath).href);
+	for (const diretorio of diretoriosComandos) {
+		const pathComandos = path.join(pathDiretorios, diretorio);
+		const arquivosComandos = fs.readdirSync(pathComandos).filter(a => a.endsWith(".js"));
+		for (const arquivo of arquivosComandos) {
+			const pathArquivo = path.join(pathComandos, arquivo);
+			const comando = await import(pathToFileURL(pathArquivo).href);
 
-			if ('data' in command && 'execute' in command) {
-				commands.push(command.data.toJSON());
+			if ("data" in comando && "execute" in comando) {
+				comandos.push(comando.data.toJSON());
 			} else {
-				console.log(`[WARNING] O comando em ${filePath} está faltando as propriedades "data" ou "execute".`);
+				console.log(`[WARNING] O comando em ${pathArquivo} não possui as propriedades "data" e/ou "execute"`);
 			}
 		}
 	}
@@ -37,14 +37,10 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
 	try {
-		console.log(`Started refreshing ${commands.length} application (/) commands.`);
-
-		const data = await rest.put(
+		await rest.put(
 			Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-			{ body: commands },
+			{ body: comandos },
 		);
-
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
 		console.error(error);
 	}

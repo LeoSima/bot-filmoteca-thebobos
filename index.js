@@ -14,22 +14,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 try {
-	const foldersPath = path.join(__dirname, 'commands');
-	const commandFolders = fs.readdirSync(foldersPath);
+	const pathDiretoriosComandos = path.join(__dirname, "commands");
+	const diretoriosComandos = fs.readdirSync(pathDiretoriosComandos);
 
-	for (const folder of commandFolders) {
-		const commandsPath = path.join(foldersPath, folder);
-		const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-		for (const file of commandFiles) {
-			const filePath = path.join(commandsPath, file);
-			const command = await import(pathToFileURL(filePath).href);
+	for (const diretorio of diretoriosComandos) {
+		const pathArquivosComandos = path.join(pathDiretoriosComandos, diretorio);
+		const arquivosComandos = fs.readdirSync(pathArquivosComandos).filter(a => a.endsWith(".js"));
+		for (const arquivo of arquivosComandos) {
+			const pathComando = path.join(pathArquivosComandos, arquivo);
+			const comando = await import(pathToFileURL(pathComando).href);
 
-			if ('data' in command && 'execute' in command) {
-				console.log(command.data.name);
-				console.log(command);
-				client.commands.set(command.data.name, command);
+			if ("data" in comando && "execute" in comando) {
+				console.log(comando.data.name);
+				console.log(comando);
+				client.commands.set(comando.data.name, comando);
 			} else {
-				console.log(`[WARNING] O comando em ${filePath} está faltando as propriedades "data" ou "execute".`);
+				console.log(`[WARNING] O comando em ${pathComando} não possui as propriedades "data" e/ou "execute"`);
 			}
 		}
 	}
@@ -38,18 +38,18 @@ try {
 }
 
 try {
-	const eventsPath = path.join(__dirname, "events");
-	const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith(".js"));
+	const diretorioEventos = path.join(__dirname, "events");
+	const arquivosEventos = fs.readdirSync(diretorioEventos).filter(a => a.endsWith(".js"));
 
-	for (const file of eventFiles) {
-		const filePath = path.join(eventsPath, file);
-		const event = await import (pathToFileURL(filePath).href);
-		const eventHandler = event.default;
+	for (const arquivo of arquivosEventos) {
+		const pathArquivo = path.join(diretorioEventos, arquivo);
+		const evento = await import (pathToFileURL(pathArquivo).href);
+		const eventoHandler = evento.default;
 
-		if (eventHandler.once) {
-			client.once(eventHandler.name, (...args) => eventHandler.execute(...args));
+		if (eventoHandler.once) {
+			client.once(eventoHandler.name, (...args) => eventoHandler.execute(...args));
 		} else {
-			client.on(eventHandler.name, (...args) => eventHandler.execute(...args));
+			client.on(eventoHandler.name, (...args) => eventoHandler.execute(...args));
 		}
 	}
 } catch (error) {
