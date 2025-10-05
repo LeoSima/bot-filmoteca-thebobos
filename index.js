@@ -14,23 +14,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 try {
-	const pathDiretoriosComandos = path.join(__dirname, "commands");
-	const diretoriosComandos = fs.readdirSync(pathDiretoriosComandos);
+	const diretorioComandos = path.join(__dirname, "commands");
+	const arquivosComandos = fs.readdirSync(diretorioComandos).filter(a => a.endsWith(".js"));
 
-	for (const diretorio of diretoriosComandos) {
-		const pathArquivosComandos = path.join(pathDiretoriosComandos, diretorio);
-		const arquivosComandos = fs.readdirSync(pathArquivosComandos).filter(a => a.endsWith(".js"));
-		for (const arquivo of arquivosComandos) {
-			const pathComando = path.join(pathArquivosComandos, arquivo);
-			const comando = await import(pathToFileURL(pathComando).href);
+	for (const arquivo of arquivosComandos) {
+		const pathComando = path.join(diretorioComandos, arquivo);
+		const moduloComando = await import(pathToFileURL(pathComando).href);
+		const comando = moduloComando.default;
 
-			if ("data" in comando && "execute" in comando) {
-				console.log(comando.data.name);
-				console.log(comando);
-				client.commands.set(comando.data.name, comando);
-			} else {
-				console.log(`[WARNING] O comando em ${pathComando} não possui as propriedades "data" e/ou "execute"`);
-			}
+		if ("data" in comando && "execute" in comando) {
+			client.commands.set(comando.data.name, comando);
+		} else {
+			console.log(`[WARNING] O comando em ${pathComando} não possui as propriedades "data" e/ou "execute"`);
 		}
 	}
 } catch (error) {

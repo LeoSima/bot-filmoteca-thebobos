@@ -10,31 +10,32 @@ const comandos = [];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const pathDiretorios = path.join(__dirname, "commands");
 
 try {
-	const diretoriosComandos = fs.readdirSync(pathDiretorios);
+	const diretorioComandos = path.join(__dirname, "commands");
+	const arquivosComandos = fs.readdirSync(diretorioComandos).filter(a => a.endsWith(".js"));
 
-	for (const diretorio of diretoriosComandos) {
-		const pathComandos = path.join(pathDiretorios, diretorio);
-		const arquivosComandos = fs.readdirSync(pathComandos).filter(a => a.endsWith(".js"));
-		for (const arquivo of arquivosComandos) {
-			const pathArquivo = path.join(pathComandos, arquivo);
-			const comando = await import(pathToFileURL(pathArquivo).href);
+	for (const arquivo of arquivosComandos) {
+		const pathComando = path.join(diretorioComandos, arquivo);
+		const moduloComando = await import(pathToFileURL(pathComando).href);
+		const comando = moduloComando.default;
 
-			if ("data" in comando && "execute" in comando) {
-				comandos.push(comando.data.toJSON());
-			} else {
-				console.log(`[WARNING] O comando em ${pathArquivo} não possui as propriedades "data" e/ou "execute"`);
-			}
+		if ("data" in comando && "execute" in comando) {
+			comandos.push(comando.data.toJSON());
+		} else {
+			console.log(`[WARNING] O comando em ${pathComando} não possui as propriedades "data" e/ou "execute"`);
 		}
 	}
 } catch (error) {
 	console.error("Erro ao ler o diretório 'commands':", error);
 }
 
-const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+if (comandos.length === 0) {
+	console.log("[WARNING] Nenhum comando válido encontrado para deploy, encerrando processo...");
+	process.exit(0);
+}
 
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 (async () => {
 	try {
 		await rest.put(
