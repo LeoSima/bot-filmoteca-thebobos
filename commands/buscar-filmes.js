@@ -5,9 +5,14 @@ export default {
     data: new SlashCommandBuilder()
         .setName("buscar")
         .setDescription("Busca filmes com base nos parâmetros passados para busca")
+        .addIntegerOption(idFilme => 
+            idFilme.setName("id")
+                .setDescription("Id do filme")
+                .setRequired(false)
+        )
         .addStringOption(nomeFilme =>
             nomeFilme.setName("nome")
-                .setDescription("Nome do filme que procura")
+                .setDescription("Nome do filme")
                 .setRequired(false)
         )
         .addStringOption(usuario =>
@@ -16,16 +21,22 @@ export default {
                 .setRequired(false)
         ),
     async execute(interaction) {
+        const id = interaction.options.getInteger("id");
         const nomeFilme = interaction.options.getString("nome");
         const username = interaction.options.getString("usuario");
 
-        if (!nomeFilme && !username) {
+        if (!id && !nomeFilme && !username) {
             await interaction.reply("É necessário informar ao menos um parâmetro para busca");
         }
 
         try {
             const filtros = [];
             const valores = [];
+
+            if (id) {
+                valores.push(id);
+                filtros.push(`filme_sugerido_id = $${valores.length}`);
+            }
 
             if (nomeFilme) {
                 valores.push(`%${nomeFilme}%`);
@@ -34,7 +45,7 @@ export default {
 
             if (username) {
                 valores.push(username);
-                filtros.push(`discord_user_username ILIKE $${valores.lenght}`);
+                filtros.push(`discord_user_username ILIKE $${valores.length}`);
             }
 
             const buscarFilmesQuery = `
