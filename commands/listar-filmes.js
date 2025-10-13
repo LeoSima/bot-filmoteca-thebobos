@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
 export default {
@@ -7,6 +7,8 @@ export default {
         .setDescription("Traz a lista completa de filmes (por enquanto, da lista de filmes sugeridos)"),
     async execute(interaction) {
         try {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
             const listarFilmesQuery = `
                 SELECT filme_sugerido_id, nome_filme, discord_user_id FROM filmes_sugeridos ORDER BY data_sugestao ASC;
             `;
@@ -32,10 +34,12 @@ export default {
                     .setColor("Red");
             }
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply("Busca finalizada, formatando retorno...");
+            await interaction.followUp({ embeds: [embed] });
+            await interaction.deleteReply();
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);
-            await interaction.reply("Occoreu um erro ao buscar a lista de filmes");
+            await interaction.editReply("Occoreu um erro ao buscar a lista de filmes");
         }
     }
 };
