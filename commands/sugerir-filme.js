@@ -37,7 +37,7 @@ export default {
             await interaction.deleteReply();
         } catch (error) {
             console.error("Erro ao gravar sugestão no banco de dados: ", error);
-            await interaction.reply("Ocorreu um erro ao tentar gravar a sugestão de filme");
+            await interaction.editReply("Ocorreu um erro ao tentar gravar a sugestão de filme");
         }
     }
 };
