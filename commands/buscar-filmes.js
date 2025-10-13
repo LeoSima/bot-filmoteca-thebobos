@@ -50,7 +50,7 @@ export default {
 
             const buscarFilmesQuery = `
                 SELECT 
-                    nome_filme, discord_user_username 
+                    filme_sugerido_id, nome_filme, discord_user_id 
                 FROM 
                     filmes_sugeridos 
                 WHERE 
@@ -60,21 +60,26 @@ export default {
             `;
             const { rows } = await query(buscarFilmesQuery, valores);
 
+            const embed = new EmbedBuilder();
             if (rows.length === 0) {
-                return interaction.reply("Nenhum filme encontrado");
+                embed.setTitle("Perdoa o pai 😭👎🏾")
+                    .setDescription("Não foi encontrado nenhum filme com os parâmetros informados")
+                    .setColor("Red");
+            } else if (rows.length < 26) { // O Embed só pode ter até 25 fields
+                embed.setTitle("Vai tomando 🥵👍🏾").setColor("Random");
+
+                rows.forEach(registro => {
+                    embed.addFields({
+                        name: `${registro.filme_sugerido_id}. ${registro.nome_filme}`,
+                        value: `Sugerido pelo(a) Bobo(a) 👉🏾 <@${registro.discord_user_id}> 👌🏾`
+                    });
+                });
+            } else {
+                embed.setTitle("Pode não man 😡❌")
+                    .setDescription("O retorno é grande demais e a solução ainda não foi implementada")
+                    .setColor("Red");
             }
 
-            const embed = new EmbedBuilder()
-                .setTitle("Filmes")
-                .setColor(0x00AE86);
-
-            rows.forEach(registro => {
-                embed.addFields({
-                    name: `Sugerido por: ${registro.discord_user_username}`,
-                    value: `Nome do filme: ${registro.nome_filme}`
-                });
-            });
-        
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);

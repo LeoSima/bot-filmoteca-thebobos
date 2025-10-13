@@ -8,18 +8,21 @@ export default {
     async execute(interaction) {
         try {
             const sortearFilmeQuery = `
-                SELECT nome_filme FROM filmes_sugeridos ORDER BY RANDOM() LIMIT 1;
+                SELECT filme_sugerido_id, nome_filme, discord_user_id FROM filmes_sugeridos ORDER BY RANDOM() LIMIT 1;
             `;
             const { rows } = await query(sortearFilmeQuery);
 
+            const embed = new EmbedBuilder();
             if (rows.length === 0) {
-                return interaction.reply("Erro ao sortear filme: nenhum filme encontrado");
+                embed.setTitle("Ih, fudeu ❓😰")
+                    .setDescription("Não foi encontrado nenhum filme para sorteio")
+                    .setColor("Red");
+            } else {
+                const filme = rows[0];
+                embed.setTitle("Sorteio pau na sua cara haha 🫵🏾😂!")
+                    .setDescription(`${filme.filme_sugerido_id}. ${filme.nome_filme}\nSugerido pelo(a) Bobo(a) 👉🏾 <@${filme.discord_user_id}> 👌🏾`)
+                    .setColor("Random");
             }
-
-            const embed = new EmbedBuilder()
-                .setTitle("Filme Sorteado")
-                .setDescription(rows[0].nome_filme)
-                .setColor(0x00AE86);
 
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
