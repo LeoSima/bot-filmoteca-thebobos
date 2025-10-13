@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
 export default {
@@ -35,6 +35,8 @@ export default {
         }
 
         try {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
             const filtros = [];
             const valores = [];
 
@@ -85,10 +87,12 @@ export default {
                     .setColor("Red");
             }
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply("Formatando retorno...");
+            await interaction.followUp({ embeds: [embed] });
+            await interaction.deleteReply();
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);
-            await interaction.reply("Occoreu um erro ao buscar os filmes");
+            await interaction.editReply("Occoreu um erro ao buscar os filmes");
         }
     }
 };
