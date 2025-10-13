@@ -26,7 +26,12 @@ export default {
         const username = interaction.options.getString("usuario");
 
         if (!id && !nomeFilme && !username) {
-            await interaction.reply("É necessário informar ao menos um parâmetro para busca");
+            const embed = new EmbedBuilder()
+                .setTitle("Ê burrão 🫵🏾🫏")
+                .setDescription("Tem que passar pelo menos um parâmetro (ID do filme, nome do filme e/ou username de quem sugeriu)")
+                .setColor("Red");
+
+            await interaction.reply({ embeds: [embed] });
         }
 
         try {
