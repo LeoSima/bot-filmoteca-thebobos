@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { AttachmentBuilder, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
@@ -39,18 +40,22 @@ export default {
             } else {
                 await interaction.editReply("Lista de filmes muito grande, gerando arquivo...");
 
-                const caminhoArquivoTemporario = "./temp-listar-filmes/filmes.txt";
-                let conteudoArquivo;
+                const pastaTemporaria = "./data/temp-listar-filmes";
+                fs.mkdirSync(pastaTemporaria);
+
+                const caminhoArquivoTemporario = path.join(pastaTemporaria, "filmes.txt");
+
+                let conteudoArquivo = "";
                 rows.forEach(registro => {
-                    registro += `${registro.filme_sugerido_id}. ${registro.nome_filme}\n`
+                    conteudoArquivo += `${registro.filme_sugerido_id}. ${registro.nome_filme}\n`
                 });
 
                 fs.writeFileSync(caminhoArquivoTemporario, conteudoArquivo);
                 const arquivo = new AttachmentBuilder(caminhoArquivoTemporario);
 
-                embed.setTitle("Pode não man 😡❌")
-                    .setDescription("O retorno é grande demais e a solução ainda não foi implementada")
-                    .setColor("Red");
+                embed.setTitle("Taporra é muito filme mané kkkj 🤓📜")
+                    .setDescription("Lista de filmes gerada com sucesso. Como não cabe em mensagem do Discord, foi convertida em .txt")
+                    .setColor("Random");
 
                 await interaction.followUp({
                     embeds: [embed],
@@ -59,6 +64,7 @@ export default {
                 await interaction.deleteReply();
 
                 fs.unlinkSync(caminhoArquivoTemporario);
+                fs.rmdirSync(pastaTemporaria);
             }
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);

@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
 export default {
@@ -14,6 +14,8 @@ export default {
         const id = interaction.options.getInteger("id");
 
         try {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
             const deletarFilmeQuery = `
                 DELETE FROM filmes_sugeridos WHERE filme_sugerido_id = $1 RETURNING *;
             `;
@@ -29,7 +31,9 @@ export default {
                     .setDescription(`Filme "${rows[0].nome_filme}" (ID ${rows[0].filme_sugerido_id}) removido da lista`);
             }
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply("Método finalizado, formatando retorno...")
+            await interaction.followUp({ embeds: [embed] });
+            await interaction.deleteReply();
         } catch (error) {
             console.error("Erro ao tentar remover a sugestão:", error);
             await interaction.reply("Ocorreu um erro ao tentar remover a sugestão de filme");
