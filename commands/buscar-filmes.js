@@ -33,7 +33,7 @@ export default {
                 .setDescription("Tem que passar pelo menos um parâmetro (ID do filme, nome do filme e/ou username de quem sugeriu)")
                 .setColor("Red");
 
-            await interaction.reply({ embeds: [embed] });
+            return await interaction.reply({ embeds: [embed] });
         }
 
         try {
@@ -121,7 +121,7 @@ export default {
             }
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);
-            await interaction.editReply("Occoreu um erro ao buscar os filmes");
+            await interaction.editReply("ocoreu um erro ao buscar os filmes");
         }
     }
 };
