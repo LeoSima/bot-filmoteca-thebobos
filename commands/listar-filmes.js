@@ -68,7 +68,7 @@ export default {
             }
         } catch (error) {
             console.error("Erro ao buscar filmes:", error);
-            await interaction.editReply("Occoreu um erro ao buscar a lista de filmes");
+            await interaction.editReply("ocoreu um erro ao buscar a lista de filmes");
         }
     }
 };
