@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
 export default {
@@ -24,6 +24,9 @@ export default {
                 embed.setTitle("Sorteio pau na sua cara haha 🫵🏾😂")
                     .setDescription(`${filme.filme_sugerido_id}. ${filme.nome_filme}\nSugerido pelo(a) Bobo(a) 👉🏾 <@${filme.discord_user_id}> 👌🏾`)
                     .setColor("Random");
+
+                const botaoConfirmar = new ButtonBuilder().setCustomId("confirmar").setLabel("Vai ser esse filme 👍🏾😎").setStyle(ButtonStyle.Success);
+                const botaoSortearNovamente = new ButtonBuilder().setCustomId("sortearNovamente").setLabel("Esse não 👎🏾🤮").setStyle(ButtonStyle.Secondary);
             }
 
             await interaction.editReply("Método finalizado, formatando retorno...")
