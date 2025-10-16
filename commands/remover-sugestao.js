@@ -1,4 +1,4 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { query } from "../data/db.js";
 
 export default {
@@ -27,6 +27,14 @@ export default {
                 embed.setTitle("Perdoa o pai 😭👎🏾")
                     .setDescription("Não foi encontrado nenhum filme com os parâmetros informados");
             } else {
+                const embedConfirmacao = new EmbedBuilder().setTitle("Tem certeza? 🤨🔥")
+                    .setDescription(`Quer deletar o filme ${rows[0].nome_filme} (ID ${rows[0].filme_sugerido_id})`)
+                    .setColor("Random");
+
+                const botaoConfirmar = new ButtonBuilder().setCustomId("confirmar").setLabel("Apaga, apaga! 😈🤘🏾").setStyle(ButtonStyle.Success);
+                const botaoSortearNovamente = new ButtonBuilder().setCustomId("sortearNovamente").setLabel("Esse não 👎🏾🤮").setStyle(ButtonStyle.Secondary);
+                const actionRow = 
+
                 embed.setTitle("It's over 🗑️💀")
                     .setDescription(`Filme "${rows[0].nome_filme}" (ID ${rows[0].filme_sugerido_id}) removido da lista`);
             }

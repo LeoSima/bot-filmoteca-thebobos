@@ -11,7 +11,15 @@ export default {
 
             let filmeNaoConfirmado = true;
             const sortearFilmeQuery = `
-                SELECT filme_sugerido_id, nome_filme, discord_user_id FROM filmes_sugeridos ORDER BY RANDOM() LIMIT 1;
+                SELECT 
+                    fs.filme_sugerido_id AS filmeId,
+                    fs.nome_filme AS nomeFilme,
+                    fs.discord_user_id AS discordUserId
+                FROM 
+                    filmes_sugeridos AS fs
+                ORDER BY 
+                    RANDOM() 
+                LIMIT 1;
             `;
 
             do {
@@ -20,9 +28,7 @@ export default {
                 if (rows.length === 0) {
                     await interaction.editReply("Método finalizado, formatando retorno...");
 
-                    const embed = new EmbedBuilder().setTitle("Ih, fudeu ❓😰")
-                        .setDescription("Não foi encontrado nenhum filme para sorteio")
-                        .setColor("Red");
+                    const embed = criarEmbedErro();
 
                     await interaction.followUp({ embeds: [embed] });
                     await interaction.deleteReply();
@@ -31,51 +37,31 @@ export default {
                     await interaction.editReply("Método finalizado, formatando retorno...");
 
                     const filme = rows[0];
-
-                    const botaoConfirmar = new ButtonBuilder().setCustomId("confirmar").setLabel("Vai ser esse filme 👍🏾😎").setStyle(ButtonStyle.Success);
-                    const botaoSortearNovamente = new ButtonBuilder().setCustomId("sortearNovamente").setLabel("Esse não 👎🏾🤮").setStyle(ButtonStyle.Secondary);
-                    const actionRow = new ActionRowBuilder().addComponents(botaoConfirmar, botaoSortearNovamente);
+                    const actionRow = criarActionRow();
+                    const embed = criarEmbedConfirmacaoSorteio(filme.nomeFilme);
 
                     const response = await interaction.editReply({
-                        content: "Confirmar filme?",
+                        embeds: [embed],
                         components: [actionRow]
                     });
 
-                    const resultado = await new Promise((resolve) => {
-                        const collector = response.createMessageComponentCollector({
-                            filter: (i) => i.user.id === interaction.user.id,
-                            time: 60_000
-                        });
-
-                        collector.on("collect", async (i) => {
-                            if (i.customId === "confirmar") {
-                                const embed = new EmbedBuilder()
-                                    .setTitle("Sorteio pau na sua cara haha 🫵🏾😂")
-                                    .setDescription(`${filme.filme_sugerido_id}. ${filme.nome_filme}\nSugerido pelo(a) Bobo(a) 👉🏾 <@${filme.discord_user_id}> 👌🏾`)
-                                    .setColor("Random");
-
-                                await i.update({ content: "Filme confirmado!", components: [], embeds: [embed] });
-                                filmeNaoConfirmado = false;
-                                collector.stop("confirmado");
-                            } else if (i.customId === "sortearNovamente") {
-                                await i.update({ content: "Beleza, sorteando outro filme...", components: [] });
-                                collector.stop("sortear_novamente");
-                            }
-                        });
-
-                        collector.on("end", (_, reason) => {
-                            resolve(reason);
-                        });
-                    });
+                    const resultado = await handleRespostaUsuario(interaction, response);
 
                     if (resultado === "confirmado") {
+                        const embed = criarEmbedFilmeEscolhido(filme);
+
+                        await interaction.followUp({ embeds: [embed] });
+                        await interaction.deleteReply();
+
                         filmeNaoConfirmado = false;
                     } else if (resultado === "time") {
-                        await interaction.editReply({
-                            content: "⏰ Tempo esgotado. Tente novamente.",
-                            components: [],
-                            embeds: []
-                        });
+                        await interaction.editReply("Tempo esgotado, formatando retorno...");
+
+                        const embed = criarEmbedTempoEsgotado();
+
+                        await interaction.followUp({ embeds: [embed] });
+                        await interaction.deleteReply();
+
                         continuarSorteando = false;
                     }
                 }
@@ -86,3 +72,57 @@ export default {
         }
     }
 };
+
+function criarEmbedErro() {
+    return new EmbedBuilder().setTitle("Ih, fudeu ❓😰")
+        .setDescription("Não foi encontrado nenhum filme para sorteio")
+        .setColor("Red");
+}
+
+function criarEmbedConfirmacaoSorteio(nomeFilme) {
+    return new EmbedBuilder().setTitle("Sorteia legal dog 🫡🎲")
+        .setDescription(`Filmim hoje vai ser '${nomeFilme}'?`)
+        .setColor("Random");
+}
+
+function criarEmbedTempoEsgotado() {
+    return new EmbedBuilder().setTitle("Coé, cabô o tempo 🧐⏳")
+        .setDescription("O tempo para confirmar o temp acabou...")
+        .setColor("Red");
+}
+
+function criarEmbedFilmeEscolhido(filme) {
+    return new EmbedBuilder().setTitle("Sorteio pau na sua cara haha 🫵🏾😂")
+        .setDescription(`${filme.filmeId}. ${filme.nomeFilme}\nSugerido pelo(a) Bobo(a) 👉🏾 <@${filme.discordUserId}> 👌🏾`)
+        .setColor("Random");
+}
+
+function criarActionRow() {
+    const botaoConfirmar = new ButtonBuilder().setCustomId("confirmar").setLabel("Vai ser esse filme 👍🏾😎").setStyle(ButtonStyle.Success);
+    const botaoSortearNovamente = new ButtonBuilder().setCustomId("sortearNovamente").setLabel("Esse não 👎🏾🤮").setStyle(ButtonStyle.Secondary);
+
+    return new ActionRowBuilder().addComponents(botaoConfirmar, botaoSortearNovamente);
+}
+
+async function handleRespostaUsuario(interaction, response) {
+    return await new Promise((resolve) => {
+        const collector = response.createMessageComponentCollector({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: 60_000
+        });
+
+        collector.on("collect", async (i) => {
+            if (i.customId === "confirmar") {
+                await i.update({ content: "Filme confirmado! Formatando retorno..." });
+                collector.stop("confirmado");
+            } else if (i.customId === "sortearNovamente") {
+                await i.update({ content: "Beleza, sorteando outro filme..." });
+                collector.stop("sortear_novamente");
+            }
+        });
+
+        collector.on("end", (_, reason) => {
+            resolve(reason);
+        });
+    });
+}
