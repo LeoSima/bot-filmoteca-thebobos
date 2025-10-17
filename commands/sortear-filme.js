@@ -12,9 +12,9 @@ export default {
             let filmeNaoConfirmado = true;
             const sortearFilmeQuery = `
                 SELECT 
-                    fs.filme_sugerido_id AS filmeId,
-                    fs.nome_filme AS nomeFilme,
-                    fs.discord_user_id AS discordUserId
+                    fs.filme_sugerido_id AS "filmeId",
+                    fs.nome_filme AS "nomeFilme",
+                    fs.discord_user_id AS "discordUserId"
                 FROM 
                     filmes_sugeridos AS fs
                 ORDER BY 
@@ -34,13 +34,18 @@ export default {
                     await interaction.deleteReply();
                     return;
                 } else {
-                    await interaction.editReply("Método finalizado, formatando retorno...");
+                    await interaction.editReply({
+                        content: "Método finalizado, formatando retorno...",
+                        embeds: [],
+                        components: []
+                    });
 
                     const filme = rows[0];
                     const actionRow = criarActionRow();
                     const embed = criarEmbedConfirmacaoSorteio(filme.nomeFilme);
 
                     const response = await interaction.editReply({
+                        content: "",
                         embeds: [embed],
                         components: [actionRow]
                     });
@@ -50,19 +55,31 @@ export default {
                     if (resultado === "confirmado") {
                         const embed = criarEmbedFilmeEscolhido(filme);
 
-                        await interaction.followUp({ embeds: [embed] });
+                        await interaction.followUp({
+                            content: "",
+                            embeds: [embed],
+                            components: [],
+                        });
                         await interaction.deleteReply();
 
                         filmeNaoConfirmado = false;
                     } else if (resultado === "time") {
-                        await interaction.editReply("Tempo esgotado, formatando retorno...");
+                        await interaction.editReply({
+                            content: "Tempo esgotado, formatando retorno...",
+                            embeds: [],
+                            components: []
+                        });
 
                         const embed = criarEmbedTempoEsgotado();
 
-                        await interaction.followUp({ embeds: [embed] });
+                        await interaction.followUp({
+                            content: "",
+                            embeds: [embed],
+                            components: []
+                        });
                         await interaction.deleteReply();
 
-                        continuarSorteando = false;
+                        filmeNaoConfirmado = false;
                     }
                 }
             } while (filmeNaoConfirmado);
@@ -87,7 +104,7 @@ function criarEmbedConfirmacaoSorteio(nomeFilme) {
 
 function criarEmbedTempoEsgotado() {
     return new EmbedBuilder().setTitle("Coé, cabô o tempo 🧐⏳")
-        .setDescription("O tempo para confirmar o temp acabou...")
+        .setDescription("O tempo para confirmar o filme acabou...")
         .setColor("Red");
 }
 
@@ -113,10 +130,18 @@ async function handleRespostaUsuario(interaction, response) {
 
         collector.on("collect", async (i) => {
             if (i.customId === "confirmar") {
-                await i.update({ content: "Filme confirmado! Formatando retorno..." });
+                await i.update({
+                    content: "Filme confirmado! Formatando retorno...",
+                    embeds: [],
+                    components: []
+                });
                 collector.stop("confirmado");
             } else if (i.customId === "sortearNovamente") {
-                await i.update({ content: "Beleza, sorteando outro filme..." });
+                await i.update({
+                    content: "Beleza, sorteando outro filme...",
+                    embeds: [],
+                    components: []
+                });
                 collector.stop("sortear_novamente");
             }
         });
