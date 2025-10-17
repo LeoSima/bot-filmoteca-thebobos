@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { Client, Collection, Events, GatewayIntentBits, MessageFlags } from "discord.js";
+import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 dotenv.config();
 

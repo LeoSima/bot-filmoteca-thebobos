@@ -44,28 +44,30 @@ export default {
 
             if (id) {
                 valores.push(id);
-                filtros.push(`filme_sugerido_id = $${valores.length}`);
+                filtros.push(`fs.filme_sugerido_id = $${valores.length}`);
             }
 
             if (nomeFilme) {
                 valores.push(`%${nomeFilme}%`);
-                filtros.push(`nome_filme ILIKE $${valores.length}`);
+                filtros.push(`fs.nome_filme ILIKE $${valores.length}`);
             }
 
             if (username) {
                 valores.push(username);
-                filtros.push(`discord_user_username ILIKE $${valores.length}`);
+                filtros.push(`fs.discord_user_username ILIKE $${valores.length}`);
             }
 
             const buscarFilmesQuery = `
                 SELECT 
-                    filme_sugerido_id, nome_filme, discord_user_id 
+                    fs.filme_sugerido_id AS "sugestaoId", 
+                    fs.nome_filme AS "nomeFilme", 
+                    fs.discord_user_id AS "discordUserId"
                 FROM 
-                    filmes_sugeridos 
+                    filmes_sugeridos fs
                 WHERE 
                     ${filtros.join(" AND ")}
                 ORDER BY 
-                    data_sugestao ASC;
+                    fs.data_sugestao ASC;
             `;
             const { rows } = await query(buscarFilmesQuery, valores);
 
@@ -82,8 +84,8 @@ export default {
 
                     rows.forEach(registro => {
                         embed.addFields({
-                            name: `${registro.filme_sugerido_id}. ${registro.nome_filme}`,
-                            value: `Sugerido pelo(a) Bobo(a) 👉🏾 <@${registro.discord_user_id}> 👌🏾`
+                            name: `${registro.sugestaoId}. ${registro.nomeFilme}`,
+                            value: `Sugerido pelo(a) Bobo(a) 👉🏾 <@${registro.discordUserId}> 👌🏾`
                         });
                     });
                 }
@@ -100,7 +102,7 @@ export default {
 
                 let conteudoArquivo = "";
                 rows.forEach(registro => {
-                    conteudoArquivo += `${registro.filme_sugerido_id}. ${registro.nome_filme}\n`
+                    conteudoArquivo += `${registro.sugestaoId}. ${registro.nomeFilme}\n`
                 });
 
                 fs.writeFileSync(caminhoArquivoTemporario, conteudoArquivo);
